@@ -1,0 +1,26 @@
+# Remplacer ctrl-A par ctrl-O
+escape ^Oo
+
+# don't display the copyright page
+startup_message off
+
+#Display a visual bell
+vbell on
+vbell_msg "   Toc Toc Neo ... "
+
+# detach on hangup
+autodetach on
+
+#Big buffer
+defscrollback 5000
+termcapinfo xterm ti@:te@
+
+
+#change the hardstatus settings to give an window list at the bottom of the
+#screen, with the time and date and with the current window highlighted
+hardstatus alwayslastline
+hardstatus string '%{gk}[ %{G}%H %{g}][%= %{wk}%?%-Lw%?%{=b kR}(%{W}%n*%f %t%?(%u)%?%{=b kR})%{= kw}%?%+Lw%?%?%= %{g}][%{Y}%l%{g}]%{=b C}[ %m/%d %c ]%{W}'
+
+screen -t Coding        1
+screen -t Phil		2
+screen -t Phil2		3

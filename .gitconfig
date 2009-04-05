@@ -1,0 +1,58 @@
+[user]
+	name = Faure Philippe
+	email = faure.phil@gmaiL.com
+[color]
+        diff = auto
+        status = auto
+        branch = auto
+[alias]
+# Clone from Gostai
+ gostai = !"f() { echo \"Clone gostai.com:$1\"; git clone git@svn.gostai.com:$1; }; f"
+ # Checkout -b
+ cob =!"f() { echo \"Checkout branch origin/$1\"; git checkout -b $1 origin/$1; }; f"
+ # Fetch/rebase
+ fr =!"f() { echo \"Fetch/rebase on origin/$1\"; git fetch && git rebase origin/$1; }; f"
+ # Automatic Fetch/rebase on current branch
+ fra = !"f() { mybranch=$(git branch --no-color | sed -ne '/^\\* */s///p'); git fr \"$mybranch\"; }; f"
+ # Submodule init
+ subi = submodule init
+ # Submodule update
+ subu = submodule update
+ # Branch
+ br = branch
+ # Branch -a
+ bra = branch -a
+
+ # Full checkout
+ full = !"f() { echo \"Full init gostai.com:$1\"; git clone git@svn.gostai.com:$1 && cd $1; sleep 1; if test "$2" = "master"; then git checkout master else git cob $2; fi; git br $2 && git subi && git subu; }; f"
+
+        st = status
+        ci = commit -s
+        co = checkout
+        diffi = diff -C --cached
+        dif = diff -C
+        di = diff -C
+        dii = diff -C --cached
+        diffstat = diff -C --stat
+        ds = diff -C --stat
+        dsi = diff -C --stat --cached
+        diffw = diff -C --ignore-all-space
+        diffwi = diff -C --ignore-all-space --cached
+        diffiw = diff -C --ignore-all-space --cached
+        dw = diff -C --ignore-all-space
+        dwi = diff -C --ignore-all-space --cached
+        dsw = diff -C --stat --ignore-all-space
+        dws = diff -C --stat --ignore-all-space
+        dswi = diff -C --stat --ignore-all-space --cached
+        dsiw = diff -C --stat --ignore-all-space --cached
+        cat = cat-file
+        cfg = config
+        ls = ls-tree
+        gcp = gc --prune
+        gcpa = gc --prune --aggressive
+        gr=!cd `git rev-parse --git-dir`/.. && git grep
+        svnup=!git svn fetch && git svn rebase
+        rewrite=!"d=`git rev-parse --git-dir`; git diff-index --quiet HEAD || { echo dirty index 2>&1; exit 1; }; f() { echo $1 >$d/rewrite; git branch | sed '/^[*] /!d;s///' >>$d/rewrite; test x"$1" = x && rm -f $d/rewrite && echo 'usage: rewrite <sha1>' || :; git checkout $1; }; f"
+        rwdone=!"d=`git rev-parse --git-dir`; test -f $d/rewrite && git rebase --onto HEAD `cat $d/rewrite`"
+
+

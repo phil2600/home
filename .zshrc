@@ -28,6 +28,7 @@ export CONFIG_SITE="$HOME/code/config.site"
 
 export EDITOR='emacs'
 export PAGER='most'
+export PATH="$HOME/bin:$PATH"
 # use colors when browsing man pages (if not using pinfo or PAGER=most)
   [ -d ~/.terminfo/ ] && alias man='TERMINFO=~/.terminfo/ LESS=C TERM=mostlike PAGER=less man'
 
