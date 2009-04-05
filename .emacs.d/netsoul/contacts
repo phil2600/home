@@ -1,0 +1,11 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     Emacs Netsoul contacts file. Edit at your own risk    ;;
+;; Do not add your code here. This file is frequently erased ;;
+;;        To customize, please use M-x netsoul-customize     ;;
+;;        To add contacts, use M-x netsoul-add-contacts      ;;
+;;     To remove contacts, use M-x netsoul-delete-contact    ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(setq netsoul-contacts-hash (make-hash-table :test 'equal))
+(puthash "faure_p" (list "Moi" (make-hash-table)) netsoul-contacts-hash)

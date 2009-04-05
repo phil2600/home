@@ -1,0 +1,946 @@
+;;
+;; .myemacs for .myemacs in /home/phil
+;;
+;; Made by Philippe Faure
+;; Login   <faure_p@epita.fr>
+;;
+;; Started on  Sat Feb  3 19:49:42 2007 Philippe Faure
+;; Last update Thu Mar  6 01:19:15 2008 Phil
+;;
+
+;;; Autoload of the configuration
+(setq load-path (cons "~/.emacs.d/" load-path))
+(require 'psvn)
+
+(require 'pabbrev)
+(global-pabbrev-mode)
+
+;; (autoload 'reindent-file "~/.emacs.d/reindent.el")
+;; (autoload 'setget "~/.emacs.d/interface.el")
+
+;; Mandatory if you used --with-lispdir.
+;(add-to-list 'load-path "~/.emacs.d/netsoul")
+;(require 'netsoul)
+;(global-set-key [(f5)] 'netsoul-show)
+
+
+(setq inhibit-startup-message t)        ; don't show the GNU splash screen
+(setq frame-title-format "%b")          ; titlebar shows buffer's name
+(auto-image-file-mode)                  ; to see picture in emacs
+(setq-default gdb-many-windows t)       ; Better gdb
+
+
+(setq delete-auto-save-files t)         ; delete unnecessary autosave files
+(setq delete-old-versions t)            ; delete oldversion file
+
+
+(if (file-exists-p "~/.emacs.d/f6100-mode.el")
+    (load-file "~/.emacs.d/f6100-mode.el"))
+(add-to-list 'auto-mode-alist '("\\.s$" . f6100-mode))
+
+
+;;; ==========
+;;;  UNIQUIFY
+;;; ==========
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'post-forward-angle-brackets)
+
+
+;;; ==========================
+;;;  Open files/switch buffers
+;;; ==========================
+(require 'ido)
+(ido-mode t)
+(when (string-match "^22." emacs-version)
+  (ido-mode t)
+;  (ido-everywhere t)
+
+  ;; tab means tab, i.e. complete. Not "open this file", stupid.
+  (setq ido-confirm-unique-completion t)
+  ;; If the file doesn't exist, do try to invent one from a transplanar
+  ;; directory. I just want a new file.
+  (setq ido-auto-merge-work-directories-length -1)
+  ;; Don't switch to GDB-mode buffers
+  (setq ido-ignore-buffers (quote ("\\`\\*breakpoints of.*\\*\\'" "\\`\\*stack frames of.*\\*\\'" "\\`\\*gud\\*\\'" "\\`\\*locals of.*\\*\\'" "\\` ")))
+  )
+
+
+;;; =======
+;;; BINDINGS
+;;; =======
+;; BINDINGS :: isearch
+(global-set-key [(control f)] 'isearch-forward-regexp)  ; search regexp
+(global-set-key [(control r)] 'query-replace-regexp)    ; replace regexp
+(define-key
+ isearch-mode-map
+ [(control n)]
+ 'isearch-repeat-forward)                              ; next occurence
+(define-key
+ isearch-mode-map
+ [(control p)]
+ 'isearch-repeat-backward)                             ; previous occurence
+(define-key
+ isearch-mode-map
+ [(control z)]
+ 'isearch-cancel)                                      ; quit and go back to start point
+(define-key
+ isearch-mode-map
+ [(control f)]
+ 'isearch-exit)                                        ; abort
+(define-key
+ isearch-mode-map
+ [(control r)]
+ 'isearch-query-replace)                               ; switch to replace mode
+(define-key
+ isearch-mode-map
+ [S-insert]
+ 'isearch-yank-kill)                                   ; paste
+(define-key
+ isearch-mode-map
+ [(control e)]
+ 'isearch-toggle-regexp)                               ; toggle regexp
+(define-key
+ isearch-mode-map
+ [(control l)]
+ 'isearch-yank-line)                                   ; yank line from buffer
+(define-key
+ isearch-mode-map
+ [(control w)]
+ 'isearch-yank-word)                                   ; yank word from buffer
+(define-key
+ isearch-mode-map
+ [(control c)]
+ 'isearch-yank-char)                                   ; yank char from buffer
+
+;; BINDINGS :: misc
+(if (display-graphic-p)
+    (global-set-key [(control z)] 'undo)                ; undo only in graphic mode
+)
+(global-set-key [C-home] 'beginning-of-buffer)          ; go to the beginning of buffer
+(global-set-key [C-end] 'end-of-buffer)                 ; go to the end of buffer
+(global-set-key [(meta g)] 'goto-line)                  ; goto line #
+
+;; (global-set-key [A-left] 'windmove-left)               ; move to left windnow
+;; (global-set-key [A-right] 'windmove-right)             ; move to right window
+;; (global-set-key [A-up] 'windmove-up)                   ; move to upper window
+;; (global-set-key [A-down] 'windmove-down)
+
+(global-set-key [M-left] 'windmove-left)                ; move to left windnow
+(global-set-key [M-right] 'windmove-right)              ; move to right window
+(global-set-key [M-up] 'windmove-up)                    ; move to upper window
+(global-set-key [M-down] 'windmove-down)
+
+(global-set-key [(control tab)] 'other-window)          ; Ctrl-Tab = Next buffer
+(global-set-key [C-S-iso-lefttab]
+                '(lambda () (interactive)
+                   (other-window -1)))                  ; Ctrl-Shift-Tab = Previous buffer
+(global-set-key [f12] 'replace-string)
+;; BINDINGS :: compile
+(global-set-key [f8] 'previous-error)
+(global-set-key [f9] 'next-error)
+(global-set-key [f10] 'recompile)
+(global-set-key [f11] 'compile)
+;; BINDINGS :: font size
+(global-set-key [(control +)] 'inc-font-size)
+(global-set-key [(control =)] 'reset-font-size)
+;; BINDINGS :: ido
+(global-set-key [(control b)] 'ido-switch-buffer)
+
+
+
+
+;; * Rebinder des raccourcis
+;;
+;; ; Raccourci globaux
+;; (global-set-key [(control x) (control y)] 'my-function)
+;;
+;; ; Raccourci pour le c-mode uniquement
+;; (define-key c-mode-base-map [(control c) (s)] 'my-function)
+;;-----
+;; la fonction c-insert-brace insere des accolades autour de la ligne
+;; courante, ce qui est extremement pratique. Utilisez la technique
+;; indiquee plus haut pour la binder au raccourci de votre choix dans le
+;; mode C. Si vous precedez la commande par C-u, elle inserera les
+;; accolades autour de la region et non de la zone
+
+
+;(define-key c-mode-base-map [(control c) (s)] 'c-insert-block)
+;(defun c-insert-block (&optional r b a)
+;  (interactive "P")
+;  (unless b (setq b ""))
+;  (unless a (setq a ""))
+;  (if r
+;      (progn
+;        (save-excursion
+;          (goto-char (rbegin))
+;          (beginning-of-line)
+;          (insert "\n")
+;          (line-move -1)
+;          (insert b "{")
+;          (c-indent-line))
+;        (save-excursion
+;          (goto-char (- (rend) 1))
+;          (end-of-line)
+;          (insert "\n}" a)
+;          (c-indent-line)
+;          (line-move -1)
+;          (end-of-line))
+;        (indent-region (rbegin) (rend)))
+;    (progn
+;        (beginning-of-line)
+;
+;        (setq begin (point))
+;
+;        (insert b "{\n")
+;        (end-of-line)
+;        (insert "\n}" a)
+;
+;        (indent-region begin (point))
+;
+;        (line-move -1)
+;        (end-of-line))))
+;
+;(defun c-insert-braces (&optional r)
+;  (interactive "P")
+;  (c-insert-block r))
+
+
+
+;; accents corrects
+(set-terminal-coding-system'latin-1)
+(set-language-environment'latin-1)
+
+
+;;font lock
+(setq font-lock-use-default-fonts nil)
+(setq font-lock-use-default-colors nil)
+
+;(require 'font-lock)
+(global-font-lock-mode nil)
+
+
+;; Switch entre les fenetres splittee
+(defun reverse-switching() (interactive)
+    (other-window -1))
+(defun next-switching() (interactive)
+    (other-window +1))
+
+
+;; Surlignage de la selection
+(transient-mark-mode t)
+
+
+;; Met en evidence les trailing whitespaces
+(setq-default show-trailing-whitespace t)
+
+
+;;delete trailling whitespace
+(add-hook 'write-file-hooks '(lambda ()
+			       (or (eq major-mode 'message-mode)
+				   (delete-trailing-whitespace))
+			       (copyright-update)))
+
+
+;;la fonction devenv permet d'avoir une "ide"
+;;avec la speedbar, la fenetre de compil, etc ..
+;; ajoutez la ligne : alias ide="emacs --geometry 145x70+155+0 -f devenv"
+;;au .bashrc
+(defun devenv()
+  (interactive)
+  (split-window-vertically 55)
+  (find-file "../ChangeLog")
+  (split-window-horizontally)
+  (other-window 2)
+  (split-window-horizontally)
+  (other-window 1)
+  (ansi-term "/bin/zsh")
+  (other-window 1)
+  (find-file "main.c")
+  ;;on active l'auto-scrolling ohorizontal:
+  (hscroll-global-mode)
+  ;;on lance la speedar
+  (speedbar)
+  )
+
+
+;;permet de mettre en couleur les types persos:
+;(require 'ctypes)
+;(setq ctypes-write-types-at-exit t)
+;(ctypes-read-file nil nil t t)
+;(ctypes-auto-parse-mode 1)
+
+;;scanne le dossier courant a la recherche de nouveau type
+;(lambda()
+;  (interactive)
+;  (ctypes-dir "."))
+
+
+;; completion du nom du buffer a selectionner en tapant une partie du nom
+;; seulement et pas uniquement un prefixe
+(require 'iswitchb)
+(iswitchb-default-keybindings)
+
+
+;; completion of files/directory
+(define-key global-map (read-kbd-macro "M-\\") 'hippie-expand)
+(add-hook 'message-setup-hook 'mail-abbrevs-setup)
+;(global-font-lock-mode t)
+
+
+;; Desactive la barre d'icones
+(tool-bar-mode nil)
+
+;; Indente les switch a la norme
+(c-set-offset 'case-label '+)
+
+;; Smooth Scrolling
+(setq scroll-step 2)
+
+
+;; Affiche le numero de ligne et de colonne
+(column-number-mode t)
+(line-number-mode t)
+
+;; Met les parentheses en evidence
+(require 'paren)
+(show-paren-mode)
+
+;; regle la fenetre de compile a 10 lignes
+(setq compilation-window-height 10)
+(setq compilation-scroll-output t)
+
+;; Save all backup files in a specific directory.
+;(defun make-backup-file-name (file)
+;  (concat "/tmp/autosave/" (file-name-nondirectory file)))
+
+;; Buffer manager
+(iswitchb-mode)
+
+;; Affiche l'heure au format 24h
+(line-number-mode 't)
+(display-time)
+
+(setq display-time-24hr-format t)
+(setq display-time-day-and-date t)
+
+;; Activer la coloration syntaxique
+(global-font-lock-mode t)
+
+;; Limite a 77 car par lignes
+(add-hook 'text-mode-hook 'turn-on-auto-fill)
+
+;; Remet en place le backspace
+;(normal-erase-is-backspace-mode 0)
+
+;;enleve la scroll bar
+(set-scroll-bar-mode nil)
+
+;; Enleve le menu-bar (alt-x)
+;(menu-bar-mode nil)
+
+;; Afficher la 'parenthese correspondante'
+(require 'paren)
+(show-paren-mode)
+
+; Insertion automatique de certains headers
+(auto-insert-mode t)
+
+
+;; ajoutez Time-stamp: <> ou Time-stamp: " " n'importe ou dans les 8 premieres
+;; lignes d'un fichier, la date sera mise a jour automatiquement
+;; a chaque sauvegarde
+(add-hook 'write-file-hooks 'time-stamp)
+(setq time-stamp-active t)
+(setq time-stamp-format "%02d-%3b-%:y %02H:%02M:%02S %u")
+
+
+;; Permet d'ouvrir les gz a la volee
+(auto-compression-mode t)
+
+
+;;ispell
+(setq ispell-dictionary "english")
+
+;; Configuration pour la lecture de News
+(setq user-full-name "Philippe Faure")
+(setq user-mail-address "faure.phil@gmail.com")
+(setq smtpmail-default-smtp-server "smtp.epita.fr")
+(setq send-mail-function 'smtpmail-send-it)
+(load-library "smtpmail")
+;; insertion automatique du fichier .signature en fin
+;(custom-set-variables '(mail-signature t)
+
+
+;; Raccourcis clavier
+(global-set-key[f1](lambda()(interactive)(manual-entry (current-word))))
+(global-set-key "\C-cC" 'uncomment-region)
+;(global-set-key[f7]'indent-region)
+;(global-set-key[f8]'compile)
+;(global-set-key[f9]'recompile)
+;(global-set-key[f11]'reverse-switching)
+;(global-set-key[f12]'next-switching)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; mouse wheel
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun up-slightly () (interactive) (scroll-up 5))
+(defun down-slightly () (interactive) (scroll-down 5))
+(global-set-key [mouse-4] 'down-slightly)
+(global-set-key [mouse-5] 'up-slightly)
+(defun up-one () (interactive)
+  (scroll-up 1))
+(defun down-one () (interactive) (scroll-down 1))
+(global-set-key [S-mouse-4] 'down-one)
+(global-set-key [S-mouse-5] 'up-one)
+(defun up-a-lot () (interactive)
+  (scroll-up))
+(defun down-a-lot () (interactive) (scroll-down))
+(global-set-key [C-mouse-4] 'down-a-lot)
+(global-set-key [C-mouse-5] 'up-a-lot)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Programmation Mode
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; elisp functions
+
+(defun yic-ignore (str)
+  (or
+   (string-match "\\*Buffer List\\*" str)
+   (string-match "\\*scratch\\*" str)
+   (string-match "^TAGS" str)
+   (string-match "^\\*Messages\\*$" str)
+   (string-match "^\\*Completions\\*$" str)
+   (string-match "^ " str)
+   (memq str
+         (mapcar
+          (lambda (x)
+            (buffer-name
+             (window-buffer
+              (frame-selected-window x))))
+          (visible-frame-list)))
+   ))
+
+(defun yic-next (ls)
+  (let* ((ptr ls)
+	 bf bn go
+	 )
+    (while (and ptr (null go))
+      (setq bf (car ptr)  bn (buffer-name bf))
+      (if (null (yic-ignore bn))
+	  (setq go bf)
+	(setq ptr (cdr ptr))
+	)
+      )
+    (if go
+	(switch-to-buffer go))))
+
+(defun yic-prev-buffer ()
+  (interactive)
+  (yic-next (reverse (buffer-list))))
+
+(defun yic-next-buffer ()
+  (interactive)
+  (bury-buffer (current-buffer))
+  (yic-next (buffer-list)))
+
+
+(add-hook 'c-mode-hook 'fp-c-mode-routine)
+(defun fp-c-mode-routine ()
+  (local-set-key "\M-q" 'rebox-comment))
+(autoload 'rebox-comment "rebox" nil t)
+(autoload 'rebox-region "rebox" nil t)
+
+(defun do_insert_time ()
+  (interactive)
+ (insert-string (current-time-string)))
+
+;;(scroll-bar-mode nil)                 ; no scroll bar
+(setq font-lock-maximum-decoration t) ; maximum decoration for all modes
+
+;; Editer les fichiers caml en touareg mode
+(setq load-path (cons "tuareg" load-path))
+(setq auto-mode-alist (cons '("\\.ml\\w?" . tuareg-mode) auto-mode-alist))
+(autoload 'tuareg-mode "tuareg" "Major mode for editing Caml code" t)
+(autoload 'camldebug "camldebug" "Run the Caml debugger" t)
+(if (and (boundp 'window-system) window-system)
+    (if (string-match "XEmacs" emacs-version)
+        (require 'sym-lock)
+      (require 'font-lock)))
+
+
+; C mode
+(c-set-offset 'substatement-open 0)   ; change '{' indentation
+(c-set-offset 'case-label '+)         ; make each case line indent from switch
+
+; Our own modes repository
+(setq load-path (cons "~/emacs.d/" load-path))
+
+; Ruby!!
+(autoload 'ruby-mode "ruby-mode" "Ruby editing mode." t)
+(add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
+(add-to-list 'interpreter-mode-alist '("ruby" . ruby-mode))
+
+; Tiger
+(autoload 'tiger-mode "tiger-mode" "tiger editing mode." t)
+(add-to-list 'auto-mode-alist '("\\.tig$" . tiger-mode))
+
+; Flex
+(autoload 'flex-mode "flex-mode" "flex editing mode." t)
+(add-to-list 'auto-mode-alist '("\\.l$" . flex-mode))
+(add-to-list 'auto-mode-alist '("\\.ll$" . flex-mode))
+
+;; ; Bison
+;; (autoload 'bison-mode "bison-mode" "bison editing mode." t)
+;; (add-to-list 'auto-mode-alist '("\\.y$" . bison-mode))
+;; (add-to-list 'auto-mode-alist '("\\.yy$" . bison-mode))
+
+; XML and traces
+(setq auto-mode-alist
+      (cons '("\\.trace$" . sgml-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.xml" . sgml-mode) auto-mode-alist))
+
+;; multi-mode used for JSP & PHP
+(autoload 'multi-mode
+  "multi-mode"
+  "Allowing multiple major modes in a buffer."
+  t)
+
+;; multi-mode used for CSS
+(autoload 'css-mode  "css-mode"  t)
+(setq auto-mode-alist
+      (cons '("\\.css$" . css-mode)
+	    auto-mode-alist))
+
+
+;; JSP mode
+(defun jsp-mode () (interactive)
+  (multi-mode 1
+	      'html-mode
+	      ;;your choice of modes for java and html
+	      ;;'("<%" java-mode)
+	      '("<%" java-mode)
+	      '("%>" html-mode)))
+
+(setq auto-mode-alist
+      (cons '("\\.jsp$" . jsp-mode)
+	    auto-mode-alist))
+
+
+(defun c-php-mode()
+  (font-lock-add-keywords 'c++-mode
+			  '("[$*]{?\\(\\sw+\\)" 1
+			    font-lock-variable-name-face))
+  (c++-mode)
+)
+
+
+;; PHP mode
+(defun php-mode () (interactive)
+  (multi-mode 1
+	      'html-mode
+	      '("<?", c-php-mode)
+	      '("?>", html-mode)))
+
+(setq auto-mode-alist
+      (cons '("\\.php$" . php-mode)
+	    auto-mode-alist))
+
+;; Marmot mode
+(defun marmot-mode () (interactive)
+  (multi-mode 1
+	      'html-mode
+	      '("%{", c++-mode)
+	      '("%}", text-mode)))
+
+(setq auto-mode-alist
+      (cons '("\\.mm$" . marmot-mode)
+ 	    auto-mode-alist))
+
+
+(put 'downcase-region 'disabled nil)
+
+(put 'upcase-region 'disabled nil)
+
+(put 'narrow-to-region 'disabled nil)
+
+;;editer les fichiers eiffel
+(add-to-list 'auto-mode-alist '("\\.e\\'" . eiffel-mode))
+(autoload 'eiffel-mode "eiffel-mode" "Major mode for Eiffel programs" t)
+
+;;editer les fichiers ada
+(add-to-list 'auto-mode-alist '("\\.adb\\'" . ada-mode))
+(add-to-list 'auto-mode-alist '("\\.ads\\'" . ada-mode))
+(autoload 'ada-mode "ada-mode" "Major mode for Ada programs" t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; cparse
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;activation de cparse: c est en anglais, mais tt est dit ..
+(require 'cparse)
+;;(setq load-path (cons "~/cparse" load-path))
+(autoload 'cparse-listparts "cparse"
+  "List all the parts in the current buffer in another buffer." t)
+(autoload 'cparse-open-on-line "cparse"
+  "Grab the object under the cursor and find it's definition." t)
+(autoload 'cpc-insert-function-comment "cpcomment"
+  "Starting at pnt, look for a function definition.  If the definition
+exists, parse for the name, else, fill everything in as null.  Then
+insert the variable cpc-function-comment, and fill in the %s with the
+parts determined.
+If the comment already exists, this function will try to update only
+the HISTORY part." t)
+(autoload 'cpc-insert-new-file-header "cpcomment"
+  "Insert a new comment describing this function based on the format
+in the variable cpc-file-comment.  It is a string with sformat tokens
+for major parts.  Optional HEADER is the header to use for the cpr
+token" t)
+(autoload 'cpr-store-in-header "cproto"
+  "Grab the header from current position, load in the header file, and
+make any needed substitutions to update the header file.  If the
+function is static, then create needed stuff in this c file for the
+prototype." t)
+
+;; encore kkes key binding pour utiliser cparse..
+(defun cparse-setup-keybindings ()
+  (define-key c-mode-map "\C-cp" 'cparse-listparts)
+  (define-key c-mode-map "\C-co" 'cparse-open-on-line)
+  (define-key c-mode-map "\C-cf" 'cpc-insert-new-file-header)
+  (define-key c-mode-map "\C-c\C-h" 'cpr-store-in-header)
+  (define-key c-mode-map "\C-c\C-d" 'cpr-insert-function-comment)
+  )
+(add-hook 'c-mode-common-hook 'cparse-setup-keybindings)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; versions control
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;(setq vc-handle-cvs nil)
+;(set-variable 'version-control t)
+;(set-variable 'kept-old-versions 5)
+;(set-variable 'kept-new-versions 20)
+;(set-variable 'delete-old-versions t)
+;(set-variable 'auto-save-interval 50)
+;(set-variable 'auto-save-timeout 10)
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;; colors
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;*********************************************** DECOM COLOR
+;; (custom-set-faces
+;;   ;; custom-set-faces was added by Custom -- don't edit or cut/paste it!
+;;   ;; Your init file should contain only one such instance.
+;;  '(background "blue")
+;;  '(font-lock-builtin-face ((((class color) (background dark)) (:foreground "Turquoise"))))
+;;  '(font-lock-comment-face ((t (:foreground "MediumAquamarine"))))
+;;  '(font-lock-constant-face ((((class color) (background dark)) (:bold t :foreground "DarkOrchid"))))
+;;  '(font-lock-doc-string-face ((t (:foreground "green2"))))
+;;  '(font-lock-function-name-face ((t (:foreground "SkyBlue"))))
+;;  '(font-lock-keyword-face ((t (:bold t :foreground "CornflowerBlue"))))
+;;  '(font-lock-preprocessor-face ((t (:italic nil :foreground "CornFlowerBlue"))))
+;;  '(font-lock-reference-face ((t (:foreground "DodgerBlue"))))
+;;  '(font-lock-string-face ((t (:foreground "LimeGreen"))))
+;;  '(font-lock-type-face ((t (:foreground "#9290ff"))))
+;;  '(font-lock-variable-name-face ((t (:foreground "PaleGreen"))))
+;;  '(font-lock-warning-face ((((class color) (background dark)) (:foreground "yellow" :background "red"))))
+;;  '(highlight ((t (:background "CornflowerBlue"))))
+;;  '(list-mode-item-selected ((t (:background "gold"))))
+;;  '(makefile-space-face ((t (:background "wheat"))))
+;;  '(modeline ((t (:background "Navy"))))
+;;  '(paren-match ((t (:background "darkseagreen4"))))
+;;  '(region ((t (:background "DarkSlateBlue"))))
+;;  '(show-paren-match-face ((t (:foreground "black" :background "wheat"))))
+;;  '(show-paren-mismatch-face ((((class color)) (:foreground "white" :background "red"))))
+;;  '(speedbar-button-face ((((class color) (background dark)) (:foreground "green4"))))
+;;  '(speedbar-directory-face ((((class color) (background dark)) (:foreground "khaki"))))
+;;  '(speedbar-file-face ((((class color) (background dark)) (:foreground "cyan"))))
+;;  '(speedbar-tag-face ((((class color) (background dark)) (:foreground "Springgreen"))))
+;;  '(vhdl-speedbar-architecture-selected-face ((((class color) (background dark)) (:underline t :foreground "Blue"))))
+;;  '(vhdl-speedbar-entity-face ((((class color) (background dark)) (:foreground "darkGreen"))))
+;;  '(vhdl-speedbar-entity-selected-face ((((class color) (background dark)) (:underline t :foreground "darkGreen"))))
+;;  '(vhdl-speedbar-package-face ((((class color) (background dark)) (:foreground "black"))))
+;;  '(vhdl-speedbar-package-selected-face ((((class color) (background dark)) (:underline t :foreground "black"))))
+;;  '(widget-field-face ((((class grayscale color) (background light)) (:background "DarkBlue")))))
+
+;; ;; fix color problems on some emacs configuration
+;; (set-face-foreground 'modeline "White")
+
+;; (setq initial-frame-alist nil)
+;; (add-to-list 'default-frame-alist
+;;       '(background-color . "Black"))
+;; (add-to-list 'default-frame-alist
+;;       '(foreground-color . "white"))
+;; (add-to-list 'default-frame-alist
+;;      '(cursor-color . "Steelblue"))
+
+;; ;; Perso - Accents Emacs
+;; ;(set-terminal-coding-system 'latin-1)
+;; ;(set-keyboard-coding-system 'latin-1)
+;; ;(set-language-environment 'latin-1)
+;; ;(setq selection-coding-system 'compound-text-with-extensions)
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;; Unusable
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; ;; colors
+;; (set-background-color "black")
+;; (set-foreground-color "grey")
+;; (set-cursor-color "red")
+
+;*********************************************** DECOM COLOR
+
+;; Yes or no plus rapides
+(fset 'yes-or-no-p 'y-or-n-p)
+
+;; Supprime automatiquement les trailing whitespaces en enregistrant
+;;(add-hook 'write-file-hooks 'delete-trailing-whitespace)
+
+;; completion
+;(require 'completion)
+;(initialize-completions)
+
+;; mode ecran de veille
+;;(zone)
+
+
+;; doxymacs
+;(require 'doxymacs)
+
+;(add-hook 'c-mode-common-hook'doxymacs-mode)
+
+;(defun my-doxymacs-font-lock-hook ()
+;  (if (or (eq major-mode 'c-mode) (eq major-mode 'c++-mode))
+;      (doxymacs-font-lock)))
+;(add-hook 'font-lock-mode-hook 'my-doxymacs-font-lock-hook)
+
+;(setq doxymacs-doxygen-style "C++")
+;(setq doxymacs-doxygen-style "JavaDoc")
+
+;; Doxymacs ouvert par default lors de l'edition d'un fichier C
+;(add-hook 'c-mode-common-hook 'doxymacs-mode)
+
+;; Active la molette de la souris
+;(mouse-wheel-mode)
+
+;; Coloration de l'editeur
+;(setq default-frame-alist
+;      '((background-color . "black")
+;        (foreground-color . "linen")
+;        (cursor-color . "blue")))
+
+;; definition du jeu de caracteres
+;(set-terminal-coding-system 'iso-latin-1)
+
+;; Ajout de l'heure ds la barre et d'un msg qd il y a des mails
+;(setq display-time-string-forms
+
+ ;;   '((format "[%s/%s/%s]-[%s:%s] " day month year 24-hours minutes )
+;      '((format "[%s/%s]-[%s:%s] " day month 24-hours minutes )))
+;;(if mail "==Mail==" load)))
+
+;; Les 'beep' deviennent visibles (et non plus audibles)
+;(setq visible-bell t)
+
+; configure ECB and activate if not in terminal
+
+;; (add-to-list 'load-path "~/.emacs.d/ecb/ecb-2.32")
+;; (add-to-list 'load-path "~/.emacs.d/ecb/eieio-0.17")
+;; (add-to-list 'load-path "~/.emacs.d/ecb/semantic-1.4.4")
+;; (add-to-list 'load-path "~/.emacs.d/ecb/speedbar-0.14beta4")
+
+;; (require 'ecb)
+;; (custom-set-variables
+;;   '(ecb-compile-window-width (quote edit-window))
+;;   '(ecb-layout-name "left15")
+;;   '(ecb-primary-secondary-mouse-buttons (quote mouse-1--mouse-2))
+;;   '(ecb-tip-of-the-day nil)
+;;   '(ecb-tree-buffer-style (quote image)))
+;; ;(if (not (eq window-system nil))
+;; ;  (ecb-activate))
+;; (defun ecb-off ()
+;;   (interactive)
+;;   ()
+;;   (ecb-deactivate)
+;;   (set-screen-width 80))
+;; (defun ecb-on ()
+;;   (interactive)
+;;   ()
+;;   (set-screen-width 119)
+;;   (ecb-activate))
+
+
+
+(require 'color-theme)
+(color-theme-initialize)
+(color-theme-clarity)
+
+(global-auto-revert-mode t)             ; auto revert modified files
+
+(require 'cmake-mode)
+(setq auto-mode-alist
+      (append '(("CMakeLists\\.txt\\'" . cmake-mode)
+		("\\.cmake\\'" . cmake-mode))
+	      auto-mode-alist))
+
+
+;;; =======
+;;; C HOOKS
+;;; =======
+;; add header guard
+(defun insert-header-guard ()
+  (interactive)
+  (save-excursion
+    (when (buffer-file-name)
+      (let*
+          (
+           (name (file-name-nondirectory buffer-file-name))
+           (macro (replace-regexp-in-string "\\." "_" (upcase name)))
+           (macro (replace-regexp-in-string "-" "_" macro))
+           (macro (concat macro "_"))
+           )
+        (goto-char (point-min))
+        (insert "#ifndef " macro "\n")
+        (insert "# define " macro "\n\n")
+        (goto-char (point-max))
+        (insert "\n#endif /* !" macro " */\n")
+        )
+      )
+    )
+  )
+; Auto insert C/C++ header guard
+(add-hook 'find-file-hooks
+          (lambda ()
+            (when (and (memq major-mode '(c-mode c++-mode)) (equal (point-min) (point-max)) (string-match ".*\\.hh?" (buffer-file-name)))
+              (insert-header-guard)
+              (goto-line 3)
+              (insert "\n"))))
+;; C / C++ mode
+(require 'cc-mode)
+(add-to-list 'c-style-alist
+             '("epita"
+               (c-basic-offset . 2)
+               (c-comment-only-line-offset . 0)
+               (c-hanging-braces-alist     . ((substatement-open before after)))
+               (c-offsets-alist . ((topmost-intro        . 0)
+                                   (substatement         . +)
+                                   (substatement-open    . 0)
+                                   (case-label           . +)
+                                   (access-label         . -)
+                                   (inclass              . ++)
+                                   (inline-open          . 0)))))
+(setq c-default-style "epita")
+;; Count nb lines
+(defun rec-lines (count)
+  (forward-line count)
+  (when (not (= (char-after) (if (= count 1) ?} ?{)))
+    (rec-lines count)
+    )
+  (point)
+  )
+(defun lines ()
+  "Count number of lines of a C function"
+  (interactive)
+  (let ((old-pt (point))
+        (pt1 (rec-lines 1))
+        (pt2 (rec-lines -1)))
+    (goto-char old-pt)
+    (message (format "Lines : %d" (1- (count-lines pt1 pt2))))
+    )
+  )
+(global-set-key "\C-x\C-l" 'lines)
+
+(defun c-insert-debug (&optional msg)
+  (interactive)
+  (when (not (looking-at "\W*$"))
+    (beginning-of-line)
+    (insert "\n")
+    (line-move -1))
+  (c-indent-line)
+  (insert "std::cerr << \"\" << std::endl;")
+  (backward-char 15))
+
+(defun c-insert-block (&optional r b a)
+  (interactive "P")
+  (unless b (setq b ""))
+  (unless a (setq a ""))
+  (if r
+      (progn
+        (save-excursion
+          (goto-char (rbegin))
+          (beginning-of-line)
+          (insert "\n")
+          (line-move -1)
+          (insert b "{")
+          (c-indent-line))
+        (save-excursion
+          (goto-char (- (rend) 1))
+          (end-of-line)
+          (insert "\n}" a)
+          (c-indent-line)
+          (line-move -1)
+          (end-of-line))
+        (indent-region (rbegin) (rend)))
+    (progn
+        (beginning-of-line)
+
+        (setq begin (point))
+
+        (insert b "{\n")
+        (end-of-line)
+        (insert "\n}" a)
+
+        (indent-region begin (point))
+
+        (line-move -1)
+        (end-of-line))))
+
+(defun c-insert-braces (&optional r)
+  (interactive "P")
+  (c-insert-block r))
+
+(defun c-insert-ns (name r)
+  (interactive "sName: \nP")
+  (c-insert-block r (concat "namespace " name "\n")))
+
+(defun c-insert-switch (value r)
+  (interactive "sValue: \nP")
+  (c-insert-block r (concat "switch (" value ")\n")))
+
+(defun c-insert-if (c r)
+  (interactive "sCondition: \nP")
+  (c-insert-block r (concat "if (" c ")\n")))
+
+(defun c-insert-class (name)
+  (interactive "sName: ")
+  (c-insert-block () (concat "class " name "\n") ";")
+  (insert "public:")
+  (c-indent-line)
+  (insert "\n")
+  (c-indent-line))
+;;; =====
+;;; Font
+;;; =====
+(setq default-font-size 105)
+
+(defun set-font-size (&optional size)
+  "Set the font size to SIZE (default: default-font-size)."
+  (interactive "nSize: ")
+  (unless size
+    (setq size default-font-size))
+  (set-face-attribute 'default nil :height size))
+(defun reset-font-size ()
+  (interactive)
+  (set-font-size))
+(defun find-next (c l)
+    (if (< c (car l))
+        (car l)
+      (if (cdr l)
+          (find-next c (cdr l))
+        (car l))))
+(defun inc-font-size ()
+  (interactive)
+  (let ((sizes '(60 75 90 105 120 135 170 280))
+        (current (face-attribute 'default :height)))
+    (let ((new (find-next current sizes)))
+      (set-font-size new))))
