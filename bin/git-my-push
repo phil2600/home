@@ -1,0 +1,239 @@
+#!/bin/sh
+
+set -e
+
+me=$(basename $0)
+stderr ()
+{
+  local i
+  for i
+  do
+    echo >&2 "$me: $i"
+  done
+}
+
+verbose ()
+{
+  case " $VERBOSE " in
+    (" x " | *" $me "*)
+      stderr "$@"
+      ;;
+  esac
+}
+
+error ()
+{
+  local err=$1
+  shift 1
+  stderr "$@"
+  exit $err
+}
+
+tempfile ()
+{
+  : ${TMPDIR=/tmp}
+  mktemp "$TMPDIR/$me.XXXXXX"
+}
+
+usage ()
+{
+   cat <<EOF
+Usage: $0 [OPTIONS...] [SHA1]
+
+Execute git push for each commit between origin/current_branch and
+head or SHA1 if specified.
+
+If interactive, open a file containing the ready to push SHA1 list to
+let you enclose SHA1s between group/end tags to push them in a single
+step.
+
+eg:
+   # Comment
+   6ba1248... My first commit
+   group
+   e6e1337... My group 1/2
+   b4ebe1c... My group 2/2
+   end
+   2bae666... My last commit
+
+!!! SHA1s are listed in push order (first push on first line). But this
+!!! script is not a "rebase --interactive" do not change SHA1s order.
+
+Options
+  -h, --help           display this message and exit successfully
+
+  -o, --origin=ORIGIN  specify the ORIGIN to push to [$origin]
+  -b, --branch=NAME    remote branch to push into [$branch]
+
+  -f, --force          pass --force to git push
+  -i, --interactive    invoke an editor to tune the way the push is done
+  -n, --dry-run        do nothing, just report what is to be pushed
+  -r, --recursive      go into submodules first
+
+SHA1
+  optional SHA1 to use as a version to push. Defaults to head.
+EOF
+   exit 0
+}
+
+getopt ()
+{
+    while test $# -ne 0
+    do
+        # Split options with an argument.
+        case $1 in
+          (*=*)
+            local opt
+            opt=$(echo "$1" | sed -e 's/=.*//')
+            local arg
+            arg=$(echo "$1" | sed -e 's/^[^=]*=//')
+            shift
+            set x "$opt" "$arg" "$@"
+            shift
+        esac
+
+        case $1 in
+            (-b|--branch)      branch=$2; shift;;
+            (-f|--force)       force_opt=--force;;
+            (-h|--help)        usage;;
+            (-i|--interactive) interactive=true;;
+            (-n|--dry-run)     dry_run=true;;
+            (-o|--origin)      origin=$2; shift;;
+            (-r|--recursive)   recursive=true;;
+
+            (-*)  error 64 "invalid argument: $1";;
+            (*)   SHA1=$1;;
+        esac
+        shift
+    done
+}
+
+
+## ------ ##
+## Main.  ##
+## ------ ##
+
+# Project name
+project_name=$(git my-project-name)
+
+# gnulib is a problem, as we are often in no branch, which is really a
+# problem.
+case $project_name in
+  (*/gnulib|*/autoconf|bison) error 0 "not treating $project_name";;
+esac
+
+dry_run=false
+# Set to --force if we want to push --force.
+force_opt=
+# Whether we launch an editor.
+interactive=false
+# Where to push to.
+origin=$(git my-current --remote)
+recursive=false
+SHA1=
+
+getopt "$@"
+
+# Implement --recursive.
+if $recursive; then
+  cmd="git my-push --recursive $force_opt"
+  ! $dry_run     || cmd+=" --dry-run"
+  ! $interactive || cmd+=" --interactive"
+  pwd=$(pwd)
+  for s in $(git my-ls-submodules)
+  do
+    stderr "Entering directory \`$s'"
+    cd "$s"
+    $cmd
+    stderr "Leaving directory \`$s'"
+    cd "$pwd"
+  done
+fi
+
+
+# See if there is something to push.  This avoids to run diff, which
+# in turn saves us from trying to get the current branch, which fails
+# when we are in no branch.
+#current=$(git log --pretty=format:%H -1)
+#if git show $origin $current >/dev/null; then
+#  error 0 "nothing to push"
+#fi
+
+
+# Remote project branch.
+: ${branch=$(git my-current --merge)}
+
+: ${EDITOR=emacs}
+
+# Temp files
+ci_file=$(tempfile)
+ci_group_file=$(tempfile)
+ci_to_push=$(tempfile)
+ci_log=$(tempfile)
+
+# Add log in SHA1 list file
+echo "# patching $project_name/$branch up to \"$(tail -n1 $ci_file)\"" > $ci_file
+
+# Get list of SHA1s to push
+git log --reverse --pretty=oneline --abbrev-commit $origin/$branch..$SHA1 >> $ci_file
+
+# Review list
+if $interactive; then
+  # Push the documentation in the file to edit.
+  { echo; usage; } | sed -e 's/^/# /' >>$ci_file
+  $EDITOR $ci_file
+fi
+
+# Extract SHA1s
+perl -pe 's/^([[:xdigit:]]{7})\.{3} .*/$1/' $ci_file >$ci_group_file
+
+# Get individual SHA1s and lasts of groups
+while read line; do
+    sha1=$line
+    case $line in
+	("#"* | '')
+	    continue
+	    ;;
+	(group)
+	    while ! test "$line" = "end"; do
+		sha1=$line
+		if ! read line; then
+		    error 1 "missing \"end\" for group"
+		fi
+	    done
+	    if test "$sha1" = "group"; then
+		error 2 "empty group"
+		exit 1
+	    fi
+
+	    ;;
+    esac
+
+    msg=$(grep "$sha1" $ci_file)
+    # Beware that the message might include backslashes.  Use printf
+    # to protect them.
+    printf "%s\n" "$msg" >> $ci_log
+    echo "$sha1" >> $ci_to_push
+done < $ci_group_file
+
+test -s $ci_log ||
+  error 0 "nothing to push"
+
+
+
+# Ask for confirmation
+stderr "Ready to push to $origin branch $branch:"
+cat >&2 -n $ci_log
+
+if ! $dry_run; then
+  stderr "Press return to continue, CTRL-C to abort"
+  read dummy_var
+
+  # Push for real
+  while read sha1; do
+    msg=$(grep "$sha1" $ci_file)
+    stderr "pushing $msg"
+    git push $force_opt $origin $sha1:$branch
+    echo
+  done < $ci_to_push
+fi

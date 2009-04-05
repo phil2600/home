@@ -1,0 +1,20 @@
+#! /bin/sh
+
+case $1 in
+  -h | --help)
+  cat <<EOF
+Usage: $0 [SHA1]
+
+Display the list of changes that are to be push to the origin up to SHA1,
+which default to HEAD.
+
+Options:
+  -h, --help  display this help and exit succesfully
+EOF
+  exit 0
+  ;;
+esac
+
+tracked=$(git my-current --tracked)
+exec git log --reverse --pretty=oneline --abbrev-commit\
+    $tracked..$1

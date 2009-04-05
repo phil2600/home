@@ -1,0 +1,108 @@
+#! /bin/sh
+
+set -e
+
+case $VERBOSE in
+  (x) set -x ;;
+esac
+
+me=$(basename "$0")
+stderr ()
+{
+  local i
+  for i
+  do
+    echo >&2 "$me: $i"
+  done
+}
+
+fatal ()
+{
+  stderr "$@"
+  exit 1
+}
+
+run ()
+{
+  stderr "run: $*"
+  if $run; then
+    "$@"
+  fi
+}
+
+usage ()
+{
+   cat <<EOF
+Usage: $0 [OPTION]...
+
+Print information about the current branch.
+
+Options
+  -h, --help	    display this message and exit successfully
+
+Output Selection:
+  -b, --branch      print the name of the current branch  [default]
+  -r, --remote      print the tracked remote
+  -m, --merge       print the tracked reference
+  -t, --tracked     print \`remote/merge'
+EOF
+   exit 0
+}
+
+
+# This is lazy.
+func_branch ()
+{
+  if test -z "$branch"; then
+    branch=$(git branch --no-color)
+    branch=$(echo "$branch" | sed -n '/^\* */s///p')
+    case $branch in
+      ("(no branch)")
+          fatal "invalid branch: $branch"
+          exit=false;;
+      (*)
+          exit=true;;
+    esac
+  fi
+  echo "$branch"
+}
+
+func_remote ()
+{
+  local branch
+  branch=$(func_branch)
+  git config --get branch.$branch.remote
+}
+
+func_merge ()
+{
+  local branch
+  branch=$(func_branch)
+  local res
+  res=$(git config --get branch.$branch.merge)
+  echo "$res" | sed -e 's,refs/heads/,,'
+}
+
+func_tracked ()
+{
+  echo "$(func_remote)/$(func_merge)"
+}
+
+# Whether to really run the command.
+mode=branch
+for opt
+do
+  case $opt in
+    (-h|--help) usage;;
+    (-b|--branch)  mode=branch;;
+    (-r|--remote)  mode=remote;;
+    (-m|--merge)   mode=merge;;
+    (-t|--tracked) mode=tracked;;
+    (*)  exit 64;;
+  esac
+done
+
+# Call the right function.
+func_$mode
+
+$exit

@@ -1,0 +1,101 @@
+#!/bin/sh
+
+set -e
+
+stderr ()
+{
+  local i
+  for i
+  do
+    echo >&2 "$me: $i"
+  done
+}
+
+verbose ()
+{
+  case " $VERBOSE " in
+    (" x " | *" $me "*)
+      stderr "$@"
+      ;;
+  esac
+}
+
+error ()
+{
+  local err=$1
+  shift 1
+  stderr "$@"
+  exit $err
+}
+
+usage ()
+{
+   cat <<EOF
+Usage: $0
+List the files which have only spaces changes.
+EOF
+   exit 0
+}
+
+getopt ()
+{
+  while test $# -ne 0
+  do
+    # Split options with an argument.
+    case $1 in
+      (*=*)
+        local opt
+        opt=$(echo "$1" | sed -e 's/=.*//')
+        local arg
+        arg=$(echo "$1" | sed -e 's/^[^=]*=//')
+        shift
+        set x "$opt" "$arg" "$@"
+        shift
+    esac
+
+    case $1 in
+        (*)  error 64 "invalid argument: $1";;
+    esac
+    shift
+  done
+}
+
+# Return the list of changed files with only space changes.
+git_space_changes ()
+{
+  # Files that have changed.
+  local status
+  status=$(git diff --diff-filter=M --raw --ignore-submodules)
+  local changed
+  changed=$(printf "%s\n" "$status" |
+            perl -pe 's/^:(?:\d{6} ){2}(?:[\da-f]{7}\.{3} ){2}M\t(.+)$/$1/')
+  local i
+  for i in $changed
+  do
+    local numlines
+    numlines=$(git diff -w $i | wc -l | tr -d ' \t')
+    case $numlines in
+      (2) echo "$i";;
+    esac
+  done
+}
+
+git_prepare_changelog ()
+{
+  cat <<EOF
+Space changes.
+
+EOF
+  local i
+  for i
+  do
+    printf "\t* $i: here\n"
+  done
+}
+
+## -------------- ##
+## Main program.  ##
+## -------------- ##
+
+files=$(git_space_changes)
+git_prepare_changelog | git commit --file=- $files

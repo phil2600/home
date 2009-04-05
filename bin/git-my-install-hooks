@@ -1,0 +1,68 @@
+#! /bin/sh
+
+set -e
+
+case $VERBOSE in
+  x) set -x;;
+esac
+
+usage ()
+{
+  cat <<EOF
+Usage: $0
+
+Replace .git/hooks with a symlink to the git/hooks repository coming
+with this script.
+
+Options:
+  -f, --force  Force the installation
+
+# Full path to this script in the \`common' repository.
+myself=$myself
+# Full path to the git/hooks directory of the \`common' repository.
+hooks=$hooks
+EOF
+  exit 0
+}
+
+# Look for ourselves.  We might be a symlink.
+myself=$0
+while test -L $myself; do
+  myself=$(readlink $myself)
+done
+
+# Look for the git/hooks from the common repository, nearby.
+here=$(cd $(dirname $myself) && pwd)
+me=$(basename $myself)
+
+# Path to the git/hooks dir.
+hooks=$here/hooks
+
+# Whether we force the installation.
+force=false;
+for arg
+do
+    case $arg in
+	-h|--help) usage;;
+	-f|--force) force=:;;
+    esac
+done
+
+if test ! -f $here/$me; then
+  echo >&2 "$0: cannot find $me in $here"
+  exit 1
+fi
+
+if test ! -d $hooks; then
+  echo >&2 "$0: cannot find hooks in $hooks"
+  exit 1
+fi
+
+# Install it in the current package, if needed.
+GIT_DIR=$(git rev-parse --git-dir)
+cd $GIT_DIR
+if test -d hooks || $force; then
+  echo >&2 "$0: installing link to $hooks"
+  mv hooks hooks.old
+  ln -s $hooks
+fi

@@ -1,0 +1,97 @@
+#! /bin/sh
+
+set -e
+
+case $VERBOSE in
+  (x) set -x ;;
+esac
+
+
+me=$(basename "$0")
+stderr ()
+{
+  local i
+  for i
+  do
+    echo >&2 "$me: $i"
+  done
+}
+
+run ()
+{
+  stderr "run: $*"
+  if $run; then
+    "$@"
+  fi
+}
+
+usage ()
+{
+   cat <<EOF
+Usage: $0 <Options>
+
+Invoke \`git submodule update --init' recursively.  Also, prune stale
+remote branches.
+
+Options
+  -h, --help	    display this message and exit successfully
+  -n, --dry-run     do nothing
+  -p, --prune       prune the dead remote branches
+EOF
+   exit 0
+}
+
+
+# git_submodule DIR
+# -----------------
+git_submodule ()
+{
+  local dir=$1
+  local subs
+  subs=$(git my-ls-submodules "$dir")
+  if test -n "$subs"; then
+    local pwd=$(pwd)
+    stderr "Entering directory \`$dir'"
+    cd "$dir"
+    $prune && for s in $subs
+    do
+      if test -d "$s"; then
+        (
+          stderr "Entering directory \`$s'"
+          cd "$s"
+          local o
+          for o in $(git remote)
+          do
+            run git remote prune $o
+          done
+          stderr "Leaving directory \`$s'"
+        )
+      fi
+    done
+    run git submodule update --init
+    # And recurse.
+    local s
+    for s in $subs
+    do
+      git_submodule "$s"
+    done
+    stderr "Leaving directory \`$dir'"
+    cd "$pwd"
+  fi
+}
+
+
+# Whether to really run the command.
+run=:
+prune=false
+for opt
+do
+  case $opt in
+    (-h|--help) usage;;
+    (-n|--dry-run) run=false;;
+    (-p|--prune) prune=true;;
+    (*)  exit 64;;
+  esac
+done
+
+git_submodule "."

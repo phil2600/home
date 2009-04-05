@@ -1,0 +1,41 @@
+#! /bin/sh
+
+set -e
+
+usage ()
+{
+   cat <<EOF
+Usage: $0 <Options>
+
+This script is meant to be run from a working directory with no
+changes whatsoever.  Local changes are likely to be lost. It is a
+wrapper running
+  - git remote update
+  - git rebase $(git-my-current --tracked)
+  - git-my-submodules
+
+Options
+  -h, --help                  display this message and exit successfully
+EOF
+   exit 0
+}
+
+
+for opt
+do
+  case $opt in
+    (-h|--help) usage;;
+    (*)  exit 64;;
+  esac
+done
+
+
+git remote update || true
+
+# The source it tracks.
+tracked=$(git-my-current --tracked)
+
+# Rebase.
+git rebase $tracked
+
+git-my-submodules

@@ -1,0 +1,91 @@
+#! /bin/sh
+
+set -e
+
+case $VERBOSE in
+  (x) set -x ;;
+esac
+
+me=$(basename "$0")
+
+stderr ()
+{
+  local i
+  for i
+  do
+    echo >&2 "$me: $i"
+  done
+}
+
+verbose ()
+{
+  case " $VERBOSE " in
+    (" x " | *" $me "*)
+      stderr "$@"
+      ;;
+  esac
+}
+
+usage ()
+{
+   cat <<EOF
+Usage: $0 <Options>
+
+List the names of the submodules.
+
+Options
+  -h, --help	    display this message and exit successfully
+EOF
+   exit 0
+}
+
+
+# git_submodule DIR
+# -----------------
+git_list_submodules ()
+{
+  local dir=$1
+  test -n "$dir" ||
+    dir=.
+  dir=$(cd "$dir" && pwd)
+
+  (
+    verbose "Entering directory \`$dir'"
+    cd $dir
+
+    # The output looks as follows:
+    #
+    #  fe0c96694ed40ca1276cb2669a989f51868bbe1f bison (v2.3b-172-gfe0c966)
+    #  def65a6806807fd8641ada815427edc00b9ae8d7 doc/document-aux (def65a6)
+    #  b2e4200330d3d690a7a561141aecb73829ff3954 externals/sdk-remote (heads/1.6)
+    # +731190b62e4094bf43b0f47ed42094089afe79ba tests (heads/master)
+    #
+    # Uninitialized submodule:
+    # -731190b62e4094bf43b0f47ed42094089afe79ba tests
+    #
+    # Can't use cut(1) because of the first column.
+    verbose "git submodule: " $(git submodule)
+    git submodule |
+      perl -ne '
+       if (m/^[-+ ][a-f0-9]{40} (.*?)(?: \(.*\))?$/)
+         { push @res, $1; }
+       else
+         { print STDERR "Unrecognized git submodule output: $_\n"; }
+       END {
+         print join (" ", sort, @res) . "\n"
+           if @res;
+       }'
+    verbose "Leaving directory: \`$dir'"
+  )
+}
+
+
+# Whether to really run the command.
+for opt
+do
+  case $opt in
+    (-h|--help) usage;;
+  esac
+done
+
+git_list_submodules "$@"

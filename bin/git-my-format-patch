@@ -1,0 +1,32 @@
+#! /bin/sh
+
+usage()
+{
+  cat <<EOF
+Usage: $O [Options] <since>
+
+This script invokes git format-patch with more informations.
+
+Options
+  -h, --help          display this message and exit
+EOF
+  exit 1
+}
+
+args=""
+for opt
+do
+  case $opt in
+    -h|--help) usage;;
+    *) args="$args , $opt";;
+  esac
+done
+
+# Get project name
+project_name=`git-my-project-name`
+
+# Get branch
+branch=`git-my-current --branch`
+
+# Call git-format-patch
+git format-patch --subject-prefix="$project_name][$branch][PATCH" -n $@
