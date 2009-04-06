@@ -1,0 +1,20 @@
+[ui]
+username = faure_p:YAKA:2011 <faure_p@epita.fr>
+
+[extensions]
+# hgext/hbisect= !
+# hgext/alias=
+# hgext/churn=
+# hgext/color=
+# hgext/convert=
+# hgext/extdiff=
+hgext/fetch=
+# hgext/graphlog=
+# hgext/hgk=
+# hgext/purge=
+# hgext/record=
+
+[alias]
+b = branch
+bs = branches
+df = extdiff -p colordiff
