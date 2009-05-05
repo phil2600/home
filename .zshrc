@@ -18,16 +18,15 @@ export PAGER='less'
 export FULLNAME='FAURE Philippe'
 export EMAIL='faure_p@epita.fr'
 export REPLYTO='faure_p@epita.fr'
+export NNTPSERVER="news.epita.fr"
 
-
-export SOCKS5_PASSWD="$(cat ~/.socks)"
+[ -e ~/.socks ] && export SOCKS5_PASSWD="$(cat ~/.socks)"
 export TSOCKS_PASSWORD=$SOCKS5_PASSWD
 export SOCKS5_USER="faure_p"
 export SOCKS_SERVER="proxy.epita.net"
-export CONFIG_SITE="$HOME/code/config.site"
+[ -e ~/code/config.site ] && export CONFIG_SITE="$HOME/code/config.site"
 
 export EDITOR='emacs'
-export PAGER='most'
 export PATH="$HOME/bin:$PATH"
 # use colors when browsing man pages (if not using pinfo or PAGER=most)
   [ -d ~/.terminfo/ ] && alias man='TERMINFO=~/.terminfo/ LESS=C TERM=mostlike PAGER=less man'
@@ -42,8 +41,8 @@ export MAKE='gmake'
 if [ x"$HOST" = x"gate-ssh" ] && (setopt | grep -q 'interactive'); then
   PROMPT="%{[1;31m%}%n%{[1;38m%}@%{[1;31m%}%m%{[m%} %B%40<..<%~%<<%b %(!.#.$) "
   RPROMPT="%(?..%{[1;31m%}%?%{[m%} )%{[1;31m%}%D{%H:%M:%S}%{[m%}"
-  echo ">>>> You are on gate-ssh, forwarding you to netbsd"
-  ssh netbsd
+  echo ">>>> You are on gate-ssh, forwarding you to freebsd"
+  ssh freebsd
   echo ">>>> Back on gate-ssh... exiting"
   exit
 fi
@@ -55,7 +54,6 @@ fi
 ###########
 
 lsbin='ls'
-#alias zlock='~/Projets/cp_home.sh && z\lock -immed -user lrde -text "      Segmentation Fault"'
 alias svn='~/bin/svn-wrapper.sh'
 case `uname -s` in
   *BSD | Darwin)
@@ -66,7 +64,6 @@ case `uname -s` in
     export LS_OPTIONS="$LS_OPTIONS -b -h --color"
     ;;
 esac
-export NNTPSERVER="news.epita.fr"
 
 if [ "`uname -s`" != "SunOS" ]; then
   if gmv --version >/dev/null 2>/dev/null; then
@@ -167,153 +164,6 @@ local prompt_rv="%(?..${lred}%?${std} )"
 PROMPT="${prompt_user}${lwhite}@${std}${prompt_host} ${prompt_cwd} %(!.#.$) "
 RPROMPT="${prompt_rv}${prompt_time}"
 
-##################
-#function precmd {
-#
-#    local TERMWIDTH
-#    (( TERMWIDTH = ${COLUMNS} - 1 ))
-#
-#
-#    ###
-#    # Truncate the path if it's too long.
-#
-#    PR_FILLBAR=""
-#    PR_PWDLEN=""
-#
-#    local promptsize=${#${(%):---(%n@%m:%l)---()--}}
-#    local pwdsize=${#${(%):-%~}}
-#
-#    if [[ "$promptsize + $pwdsize" -gt $TERMWIDTH ]]; then
-#	    ((PR_PWDLEN=$TERMWIDTH - $promptsize))
-#    else
-#	PR_FILLBAR="\${(l.(($TERMWIDTH - ($promptsize + $pwdsize)))..${PR_HBAR}.)}"
-#    fi
-#
-#
-#    ###
-#    # Get APM info.
-#
-#    if which ibam > /dev/null; then
-#	PR_APM_RESULT=`ibam --percentbattery`
-#    elif which apm > /dev/null; then
-#	PR_APM_RESULT=`apm`
-#    fi
-#}
-#
-#
-#setopt extended_glob
-#preexec () {
-#    if [[ "$TERM" == "screen" ]]; then
-#	local CMD=${1[(wr)^(*=*|sudo|-*)]}
-#	echo -n "\ek$CMD\e\\"
-#    fi
-#}
-#
-#
-#setprompt () {
-#    ###
-#    # Need this so the prompt will work.
-#
-#    setopt prompt_subst
-#
-#
-#    ###
-#    # See if we can use colors.
-#
-#    autoload colors zsh/terminfo
-#    if [[ "$terminfo[colors]" -ge 8 ]]; then
-#	colors
-#    fi
-#    for color in RED GREEN YELLOW BLUE MAGENTA CYAN WHITE; do
-#	eval PR_$color='%{$terminfo[bold]$fg[${(L)color}]%}'
-#	eval PR_LIGHT_$color='%{$fg[${(L)color}]%}'
-#	(( count = $count + 1 ))
-#    done
-#    PR_NO_COLOUR="%{$terminfo[sgr0]%}"
-#
-#
-#    ###
-#    # See if we can use extended characters to look nicer.
-#
-#    typeset -A altchar
-#    set -A altchar ${(s..)terminfo[acsc]}
-#    PR_SET_CHARSET="%{$terminfo[enacs]%}"
-#    PR_SHIFT_IN="%{$terminfo[smacs]%}"
-#    PR_SHIFT_OUT="%{$terminfo[rmacs]%}"
-#    PR_HBAR=${altchar[q]:--}
-#    PR_ULCORNER=${altchar[l]:--}
-#    PR_LLCORNER=${altchar[m]:--}
-#    PR_LRCORNER=${altchar[j]:--}
-#    PR_URCORNER=${altchar[k]:--}
-#
-#
-#    ###
-#    # Decide if we need to set titlebar text.
-#
-#    case $TERM in
-#	xterm*)
-#	    PR_TITLEBAR=$'%{\e]0;%(!.-=*[ROOT]*=- | .)%n@%m:%~ | ${COLUMNS}x${LINES} | %y\a%}'
-#	    ;;
-#	screen)
-#	    PR_TITLEBAR=$'%{\e_screen \005 (\005t) | %(!.-=[ROOT]=- | .)%n@%m:%~ | ${COLUMNS}x${LINES} | %y\e\\%}'
-#	    ;;
-#	*)
-#	    PR_TITLEBAR=''
-#	    ;;
-#    esac
-#
-#
-#    ###
-#    # Decide whether to set a screen title
-#    if [[ "$TERM" == "screen" ]]; then
-#	PR_STITLE=$'%{\ekzsh\e\\%}'
-#    else
-#	PR_STITLE=''
-#    fi
-#
-#
-#    ###
-#    # APM detection
-#
-#    if which ibam > /dev/null; then
-#	PR_APM='$PR_RED${${PR_APM_RESULT[(f)1]}[(w)-2]}%%(${${PR_APM_RESULT[(f)3]}[(w)-1]})$PR_LIGHT_BLUE:'
-#    elif which apm > /dev/null; then
-#	PR_APM='$PR_RED${PR_APM_RESULT[(w)5,(w)6]/\% /%%}$PR_LIGHT_BLUE:'
-#    else
-#	PR_APM=''
-#    fi
-#
-#
-#    ###
-#    # Finally, the prompt.
-#
-#    PROMPT='$PR_SET_CHARSET$PR_STITLE${(e)PR_TITLEBAR}\
-#$PR_CYAN$PR_SHIFT_IN$PR_ULCORNER$PR_BLUE$PR_HBAR$PR_SHIFT_OUT(\
-#$PR_GREEN%(!.%SROOT%s.%n)$PR_GREEN@%m:%l\
-#$PR_BLUE)$PR_SHIFT_IN$PR_HBAR$PR_CYAN$PR_HBAR${(e)PR_FILLBAR}$PR_BLUE$PR_HBAR$PR_SHIFT_OUT(\
-#$PR_MAGENTA%$PR_PWDLEN<...<%~%<<\
-#$PR_BLUE)$PR_SHIFT_IN$PR_HBAR$PR_CYAN$PR_URCORNER$PR_SHIFT_OUT\
-#
-#$PR_CYAN$PR_SHIFT_IN$PR_LLCORNER$PR_BLUE$PR_HBAR$PR_SHIFT_OUT(\
-#%(?..$PR_LIGHT_RED%?$PR_BLUE:)\
-#${(e)PR_APM}$PR_YELLOW%D{%H:%M}\
-#$PR_LIGHT_BLUE:%(!.$PR_RED.$PR_WHITE)%#$PR_BLUE)$PR_SHIFT_IN$PR_HBAR$PR_SHIFT_OUT\
-#$PR_CYAN$PR_SHIFT_IN$PR_HBAR$PR_SHIFT_OUT\
-#$PR_NO_COLOUR '
-#
-#    RPROMPT=' $PR_CYAN$PR_SHIFT_IN$PR_HBAR$PR_BLUE$PR_HBAR$PR_SHIFT_OUT\
-#($PR_YELLOW%D{%a,%b%d}$PR_BLUE)$PR_SHIFT_IN$PR_HBAR$PR_CYAN$PR_LRCORNER$PR_SHIFT_OUT$PR_NO_COLOUR'
-#
-#    PS2='$PR_CYAN$PR_SHIFT_IN$PR_HBAR$PR_SHIFT_OUT\
-#$PR_BLUE$PR_SHIFT_IN$PR_HBAR$PR_SHIFT_OUT(\
-#$PR_LIGHT_GREEN%_$PR_BLUE)$PR_SHIFT_IN$PR_HBAR$PR_SHIFT_OUT\
-#$PR_CYAN$PR_SHIFT_IN$PR_HBAR$PR_SHIFT_OUT$PR_NO_COLOUR '
-#}
-#
-#setprompt
-#
-
-##################
 
 ##############
 # TERM STUFF #
@@ -460,17 +310,16 @@ zstyle ':completion:*:complete:-command-::commands' ignored-patterns '*\~'
 zstyle ':completion:*' menu select=2
 
 # zstyle ':completion:*:*:kill:*' verbose no
-#  zstyle ':completion:*:sudo:*' command-path /usr/local/sbin /usr/local/bin \
-#                                /usr/sbin /usr/bin /sbin /bin /usr/X11R6/bin
 
 # caching
 [ -d $ZSHDIR/cache ] && zstyle ':completion:*' use-cache yes && \
                         zstyle ':completion::complete:*' cache-path $ZSHDIR/cache/
 
-# use ~/.ssh/known_hosts for completion
-#  local _myhosts
-#  _myhosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
-#  zstyle ':completion:*' hosts $_myhosts
+#use ~/.ssh/known_hosts for completion
+#local _myhosts
+#_myhosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
+#zstyle ':completion:*' hosts $_myhosts
+
 known_hosts=''
 [ -f "$HOME/.ssh/known_hosts" ] && \
 known_hosts="`awk '$1!~/\|/{print $1}' $HOME/.ssh/known_hosts | cut -f1 -d, | xargs`"
@@ -515,7 +364,7 @@ compdef _hosts upgrade
 
 [ -r ~/.zshrc.local ] && source ~/.zshrc.local
 
-[ -r /nix/etc/profile.d/nix.sh ] && source /nix/etc/profile.d/nix.sh
+#[ -r /nix/etc/profile.d/nix.sh ] && source /nix/etc/profile.d/nix.sh
 umask 0066
 
 
@@ -523,37 +372,9 @@ umask 0066
 # STUPIDITIES #
 ###############
 # Show the TODO file
-[ -e ~/TODO ] && ([ -e ~/todo.sh ] && ./todo.sh || < ~/TODO)
-
-# Set the prompt.
-#prompt="$PromptColor%~%(!|%{$fg[yellow]%}|%{$fg_bold[black]%})%(?..%{$fg[red]%})%#%{$fg_no_bold[default]%} "
-
-# Special setting for inside emacs.
-#[[ $INSIDE_EMACS = t ]] && unsetopt zle
-
+[ -e ~/TODO ] && ([ -e ~/todo.sh ] && ~/todo.sh -l || < ~/TODO)
 
 alias unrar='nice -n 19 unrar'
-
-#my-accept-line ()
-#{
-#    targets="emacs e firefox xpdf gthumb"
-#
-#    if test "${+SSH_CONNECTION}" -eq 0; then
-#        if ! echo "$BUFFER" | grep -Eq "&!?$"; then
-#            for t in $targets; do
-#                if echo $BUFFER | grep -q "^$t\b"; then
-#                    BUFFER="$BUFFER&!"
-#                    break
-#                fi
-#            done
-#        fi
-#    fi
-#    zle accept-line
-#}
-
-#zle -N my-accept-line
-
-#bindkey "" my-accept-line
 
 # no beep
 unsetopt beep
@@ -562,12 +383,7 @@ unsetopt list_beep
 
 setopt hist_verify
 
-
-
-. ~/.zshrc_functions
-
-xset b off
-
+[ -r ~/.zshrc_functions ] && source ~/.zshrc_functions
 
 ## Kaneton ##
 export KANETON_USER="faure_p"
@@ -575,3 +391,6 @@ export KANETON_HOST="linux/ia32"
 export KANETON_PLATFORM="ibm-pc"
 export KANETON_ARCHITECTURE="ia32"
 export KANETON_PYTHON="/usr/bin/python"
+
+##
+alias man="PAGER=most man"

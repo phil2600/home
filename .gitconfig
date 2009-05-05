@@ -6,8 +6,6 @@
         status = auto
         branch = auto
 [alias]
-# Clone from Gostai
- gostai = !"f() { echo \"Clone gostai.com:$1\"; git clone git@svn.gostai.com:$1; }; f"
  # Checkout -b
  cob =!"f() { echo \"Checkout branch origin/$1\"; git checkout -b $1 origin/$1; }; f"
  # Fetch/rebase
@@ -22,9 +20,6 @@
  br = branch
  # Branch -a
  bra = branch -a
-
- # Full checkout
- full = !"f() { echo \"Full init gostai.com:$1\"; git clone git@svn.gostai.com:$1 && cd $1; sleep 1; if test "$2" = "master"; then git checkout master else git cob $2; fi; git br $2 && git subi && git subu; }; f"
 
         st = status
         ci = commit -s
