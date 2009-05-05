@@ -19,17 +19,15 @@ export PAGER='less'
 export FULLNAME='FAURE Philippe'
 export EMAIL='faure_p@epita.fr'
 export REPLYTO='faure_p@epita.fr'
+export NNTPSERVER="news.epita.fr"
 
 [ -r ~/.socks ] && export SOCKS5_PASSWD="$(cat ~/.socks)"
 export TSOCKS_PASSWORD=$SOCKS5_PASSWD
 export SOCKS5_USER="faure_p"
 export SOCKS_SERVER="proxy.epita.net"
-
-export CONFIG_SITE="$HOME/code/config.site"
+[ -r ~/code/config.site ] && export CONFIG_SITE="$HOME/code/config.site"
 
 export EDITOR='emacs'
-export MAKE='gmake'
-
 export PATH="$HOME/bin:$PATH"
 
 # use colors when browsing man pages (if not using pinfo or PAGER=most)
@@ -45,8 +43,8 @@ export NO_STRICT_EPITA_HEADERS='1' # Used for ViM
 if [ x"$HOST" = x"gate-ssh" ] && (setopt | grep -q 'interactive'); then
   PROMPT="%{[1;31m%}%n%{[1;38m%}@%{[1;31m%}%m%{[m%} %B%40<..<%~%<<%b %(!.#.$) "
   RPROMPT="%(?..%{[1;31m%}%?%{[m%} )%{[1;31m%}%D{%H:%M:%S}%{[m%}"
-  echo ">>>> You are on gate-ssh, forwarding you to netbsd"
-  ssh netbsd
+  echo ">>>> You are on gate-ssh, forwarding you to freebsd"
+  ssh freebsd
   echo ">>>> Back on gate-ssh... exiting"
   exit
 fi
@@ -58,7 +56,6 @@ fi
 ###########
 
 lsbin='ls'
-#alias zlock='~/Projets/cp_home.sh && z\lock -immed -user lrde -text "      Segmentation Fault"'
 alias svn='~/bin/svn-wrapper.sh'
 case `uname -s` in
   *BSD | Darwin)
@@ -69,7 +66,6 @@ case `uname -s` in
     export LS_OPTIONS="$LS_OPTIONS -b -h --color"
     ;;
 esac
-export NNTPSERVER="news.epita.fr"
 
 if [ "`uname -s`" != "SunOS" ]; then
   if gmv --version >/dev/null 2>/dev/null; then
@@ -316,17 +312,16 @@ zstyle ':completion:*:complete:-command-::commands' ignored-patterns '*\~'
 zstyle ':completion:*' menu select=2
 
 # zstyle ':completion:*:*:kill:*' verbose no
-#  zstyle ':completion:*:sudo:*' command-path /usr/local/sbin /usr/local/bin \
-#                                /usr/sbin /usr/bin /sbin /bin /usr/X11R6/bin
 
 # caching
 [ -d $ZSHDIR/cache ] && zstyle ':completion:*' use-cache yes && \
                         zstyle ':completion::complete:*' cache-path $ZSHDIR/cache/
 
-# use ~/.ssh/known_hosts for completion
-#  local _myhosts
-#  _myhosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
-#  zstyle ':completion:*' hosts $_myhosts
+#use ~/.ssh/known_hosts for completion
+#local _myhosts
+#_myhosts=( ${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[0-9]*}%%\ *}%%,*} )
+#zstyle ':completion:*' hosts $_myhosts
+
 known_hosts=''
 [ -f "$HOME/.ssh/known_hosts" ] && \
 known_hosts="`awk '$1!~/\|/{print $1}' $HOME/.ssh/known_hosts | cut -f1 -d, | xargs`"
@@ -382,13 +377,6 @@ umask 0066
 # Show the TODO file
 [ -e ~/TODO ] && ([ -e ~/todo.sh ] && ~/todo.sh -l || < ~/TODO)
 
-# Set the prompt.
-#prompt="$PromptColor%~%(!|%{$fg[yellow]%}|%{$fg_bold[black]%})%(?..%{$fg[red]%})%#%{$fg_no_bold[default]%} "
-
-# Special setting for inside emacs.
-#[[ $INSIDE_EMACS = t ]] && unsetopt zle
-
-
 alias unrar='nice -n 19 unrar'
 
 # no beep
@@ -404,3 +392,6 @@ setopt hist_verify
 #export KANETON_PLATFORM="ibm-pc"
 #export KANETON_ARCHITECTURE="ia32"
 #export KANETON_PYTHON="/usr/bin/python"
+##
+alias man="PAGER=most man"
+
