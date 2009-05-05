@@ -45,8 +45,8 @@ export NO_STRICT_EPITA_HEADERS='1' # Used for ViM
 if [ x"$HOST" = x"gate-ssh" ] && (setopt | grep -q 'interactive'); then
   PROMPT="%{[1;31m%}%n%{[1;38m%}@%{[1;31m%}%m%{[m%} %B%40<..<%~%<<%b %(!.#.$) "
   RPROMPT="%(?..%{[1;31m%}%?%{[m%} )%{[1;31m%}%D{%H:%M:%S}%{[m%}"
-  echo ">>>> You are on gate-ssh, forwarding you to netbsd"
-  ssh netbsd
+  echo ">>>> You are on gate-ssh, forwarding you to freebsd"
+  ssh freebsd
   echo ">>>> Back on gate-ssh... exiting"
   exit
 fi
