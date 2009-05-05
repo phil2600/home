@@ -1,8 +1,15 @@
 [ EPITA ]
+-	Droit Prop Intell
+-	Marketing Indus
 [ YAKA ]
 [ ROOT ]
->	git
->	Migration Intra svn => git
++	Obfuscation de la clef
++	git
++	Migration Intra svn => git
++	Migration Scripts
+>	  Tests
++	Mise en place sur les serveurs
+>	  Tests
 >	Dump BDD Intra
 >	Dump
--       droits sur les depots
+-	Droits sur les depots
