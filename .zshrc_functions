@@ -1,3 +1,5 @@
+#! /usr/bin/zsh
+
 #############
 # FUNCTIONS #
 #############
@@ -225,6 +227,32 @@ mntOnRam() {
     sudo mount -t tmpfs tmpfs "$1" -o size=$2m
 }
 
+# display typedefs, structs, unions and functions provided by a header file
+dispHeaderInfos() {
+    cpp "$i" | grep -v '^#' | grep -v '^$' | less
+}
+
+# Given process ID print its environment variables
+dispEnvVar() {
+    sudo sed 's/\o0/\n/g' /proc/$1/environ
+}
+
+
+# Graph of connections for each hosts.
+graphCnx() {
+    netstat -an | grep ESTABLISHED | awk '{print $5}' | awk -F: '{print $1}' | sort | uniq -c | awk '{ printf("%s\t%s\t",$2,$1) ; for (i = 0; i < $1; i++) {printf("*")}; print "" }'
+}
+
+# Displays the attempted user name, ip address, and time of SSH failed logins on Debian machines
+dispErrorsOnSSH() {
+awk '/sshd/ && /Failed/ {gsub(/invalid user/,""); printf "%-12s %-16s %s-%s-%s\n", $9, $11, $1, $2, $3}' /var/log/auth.log
+}
+
+
+# Display fibonacci numbers
+fibo() {
+    seq 50| awk 'BEGIN {a=1; b=1} {print a; c=a+b; a=b; b=c}'
+}
 
 ###########
 #  ALIAS  #
@@ -306,3 +334,7 @@ alias lssmall="ls -Srl *(.oL[1,10])"
 ###########
 #
 #cdiff()   { diff -crd "$*" | egrep -v "^Only in |^Binary files " }
+
+# Display a block of text with AWK
+# awk '/start_pattern/,/stop_pattern/' file.txt
+## dmidecode | awk '/Battery/,/^$/'
