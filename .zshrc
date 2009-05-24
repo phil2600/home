@@ -1,12 +1,13 @@
-#!/usr/bin/zsh
+#! /usr/bin/zsh
 ##
 ## .zshrc for zsh in /home/phil
 ##
-## Made by FAURE Philippe
+## Based on tsuna configuration file
+## Made by Philippe FAURE
 ## Login   <faure_p@epita.fr>
 ##
-## Started on  Sat Mar 11 02:42:09 2006 FAURE Philippe
-## Last update Mon Apr 21 21:22:54 2008 Phil
+## Started on  Sat Mar 11 02:42:09 2006 Philippe FAURE
+## Last update Mon Apr 21 21:22:54 2009 Philippe FAURE
 ##
 
 #######
@@ -19,25 +20,27 @@ export FULLNAME='FAURE Philippe'
 export EMAIL='faure_p@epita.fr'
 export REPLYTO='faure_p@epita.fr'
 
-
-export SOCKS5_PASSWD="$(cat ~/.socks)"
+[ -r ~/.socks ] && export SOCKS5_PASSWD="$(cat ~/.socks)"
 export TSOCKS_PASSWORD=$SOCKS5_PASSWD
 export SOCKS5_USER="faure_p"
 export SOCKS_SERVER="proxy.epita.net"
+
 export CONFIG_SITE="$HOME/code/config.site"
 
 export EDITOR='emacs'
-export PAGER='most'
+export MAKE='gmake'
+
 export PATH="$HOME/bin:$PATH"
+
 # use colors when browsing man pages (if not using pinfo or PAGER=most)
   [ -d ~/.terminfo/ ] && alias man='TERMINFO=~/.terminfo/ LESS=C TERM=mostlike PAGER=less man'
 
 #export MAIL="/var/mail/$USER"
 export LS_COLORS='no=00:fi=00:di=01;34:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:*.rar=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.ogg=01;35:*.mp3=01;35:*.wav=01;35:'
 export LS_OPTIONS='-F'
+
 export MALLOC_OPTIONS='J'
 export NO_STRICT_EPITA_HEADERS='1' # Used for ViM
-export MAKE='gmake'
 
 if [ x"$HOST" = x"gate-ssh" ] && (setopt | grep -q 'interactive'); then
   PROMPT="%{[1;31m%}%n%{[1;38m%}@%{[1;31m%}%m%{[m%} %B%40<..<%~%<<%b %(!.#.$) "
@@ -51,7 +54,7 @@ fi
 [ ! -z "$DISPLAY" ] && xset b off && xset r rate 250 75
 
 ###########
-# ALIASES #
+# ALIASES # (basics)
 ###########
 
 lsbin='ls'
@@ -167,153 +170,6 @@ local prompt_rv="%(?..${lred}%?${std} )"
 PROMPT="${prompt_user}${lwhite}@${std}${prompt_host} ${prompt_cwd} %(!.#.$) "
 RPROMPT="${prompt_rv}${prompt_time}"
 
-##################
-#function precmd {
-#
-#    local TERMWIDTH
-#    (( TERMWIDTH = ${COLUMNS} - 1 ))
-#
-#
-#    ###
-#    # Truncate the path if it's too long.
-#
-#    PR_FILLBAR=""
-#    PR_PWDLEN=""
-#
-#    local promptsize=${#${(%):---(%n@%m:%l)---()--}}
-#    local pwdsize=${#${(%):-%~}}
-#
-#    if [[ "$promptsize + $pwdsize" -gt $TERMWIDTH ]]; then
-#	    ((PR_PWDLEN=$TERMWIDTH - $promptsize))
-#    else
-#	PR_FILLBAR="\${(l.(($TERMWIDTH - ($promptsize + $pwdsize)))..${PR_HBAR}.)}"
-#    fi
-#
-#
-#    ###
-#    # Get APM info.
-#
-#    if which ibam > /dev/null; then
-#	PR_APM_RESULT=`ibam --percentbattery`
-#    elif which apm > /dev/null; then
-#	PR_APM_RESULT=`apm`
-#    fi
-#}
-#
-#
-#setopt extended_glob
-#preexec () {
-#    if [[ "$TERM" == "screen" ]]; then
-#	local CMD=${1[(wr)^(*=*|sudo|-*)]}
-#	echo -n "\ek$CMD\e\\"
-#    fi
-#}
-#
-#
-#setprompt () {
-#    ###
-#    # Need this so the prompt will work.
-#
-#    setopt prompt_subst
-#
-#
-#    ###
-#    # See if we can use colors.
-#
-#    autoload colors zsh/terminfo
-#    if [[ "$terminfo[colors]" -ge 8 ]]; then
-#	colors
-#    fi
-#    for color in RED GREEN YELLOW BLUE MAGENTA CYAN WHITE; do
-#	eval PR_$color='%{$terminfo[bold]$fg[${(L)color}]%}'
-#	eval PR_LIGHT_$color='%{$fg[${(L)color}]%}'
-#	(( count = $count + 1 ))
-#    done
-#    PR_NO_COLOUR="%{$terminfo[sgr0]%}"
-#
-#
-#    ###
-#    # See if we can use extended characters to look nicer.
-#
-#    typeset -A altchar
-#    set -A altchar ${(s..)terminfo[acsc]}
-#    PR_SET_CHARSET="%{$terminfo[enacs]%}"
-#    PR_SHIFT_IN="%{$terminfo[smacs]%}"
-#    PR_SHIFT_OUT="%{$terminfo[rmacs]%}"
-#    PR_HBAR=${altchar[q]:--}
-#    PR_ULCORNER=${altchar[l]:--}
-#    PR_LLCORNER=${altchar[m]:--}
-#    PR_LRCORNER=${altchar[j]:--}
-#    PR_URCORNER=${altchar[k]:--}
-#
-#
-#    ###
-#    # Decide if we need to set titlebar text.
-#
-#    case $TERM in
-#	xterm*)
-#	    PR_TITLEBAR=$'%{\e]0;%(!.-=*[ROOT]*=- | .)%n@%m:%~ | ${COLUMNS}x${LINES} | %y\a%}'
-#	    ;;
-#	screen)
-#	    PR_TITLEBAR=$'%{\e_screen \005 (\005t) | %(!.-=[ROOT]=- | .)%n@%m:%~ | ${COLUMNS}x${LINES} | %y\e\\%}'
-#	    ;;
-#	*)
-#	    PR_TITLEBAR=''
-#	    ;;
-#    esac
-#
-#
-#    ###
-#    # Decide whether to set a screen title
-#    if [[ "$TERM" == "screen" ]]; then
-#	PR_STITLE=$'%{\ekzsh\e\\%}'
-#    else
-#	PR_STITLE=''
-#    fi
-#
-#
-#    ###
-#    # APM detection
-#
-#    if which ibam > /dev/null; then
-#	PR_APM='$PR_RED${${PR_APM_RESULT[(f)1]}[(w)-2]}%%(${${PR_APM_RESULT[(f)3]}[(w)-1]})$PR_LIGHT_BLUE:'
-#    elif which apm > /dev/null; then
-#	PR_APM='$PR_RED${PR_APM_RESULT[(w)5,(w)6]/\% /%%}$PR_LIGHT_BLUE:'
-#    else
-#	PR_APM=''
-#    fi
-#
-#
-#    ###
-#    # Finally, the prompt.
-#
-#    PROMPT='$PR_SET_CHARSET$PR_STITLE${(e)PR_TITLEBAR}\
-#$PR_CYAN$PR_SHIFT_IN$PR_ULCORNER$PR_BLUE$PR_HBAR$PR_SHIFT_OUT(\
-#$PR_GREEN%(!.%SROOT%s.%n)$PR_GREEN@%m:%l\
-#$PR_BLUE)$PR_SHIFT_IN$PR_HBAR$PR_CYAN$PR_HBAR${(e)PR_FILLBAR}$PR_BLUE$PR_HBAR$PR_SHIFT_OUT(\
-#$PR_MAGENTA%$PR_PWDLEN<...<%~%<<\
-#$PR_BLUE)$PR_SHIFT_IN$PR_HBAR$PR_CYAN$PR_URCORNER$PR_SHIFT_OUT\
-#
-#$PR_CYAN$PR_SHIFT_IN$PR_LLCORNER$PR_BLUE$PR_HBAR$PR_SHIFT_OUT(\
-#%(?..$PR_LIGHT_RED%?$PR_BLUE:)\
-#${(e)PR_APM}$PR_YELLOW%D{%H:%M}\
-#$PR_LIGHT_BLUE:%(!.$PR_RED.$PR_WHITE)%#$PR_BLUE)$PR_SHIFT_IN$PR_HBAR$PR_SHIFT_OUT\
-#$PR_CYAN$PR_SHIFT_IN$PR_HBAR$PR_SHIFT_OUT\
-#$PR_NO_COLOUR '
-#
-#    RPROMPT=' $PR_CYAN$PR_SHIFT_IN$PR_HBAR$PR_BLUE$PR_HBAR$PR_SHIFT_OUT\
-#($PR_YELLOW%D{%a,%b%d}$PR_BLUE)$PR_SHIFT_IN$PR_HBAR$PR_CYAN$PR_LRCORNER$PR_SHIFT_OUT$PR_NO_COLOUR'
-#
-#    PS2='$PR_CYAN$PR_SHIFT_IN$PR_HBAR$PR_SHIFT_OUT\
-#$PR_BLUE$PR_SHIFT_IN$PR_HBAR$PR_SHIFT_OUT(\
-#$PR_LIGHT_GREEN%_$PR_BLUE)$PR_SHIFT_IN$PR_HBAR$PR_SHIFT_OUT\
-#$PR_CYAN$PR_SHIFT_IN$PR_HBAR$PR_SHIFT_OUT$PR_NO_COLOUR '
-#}
-#
-#setprompt
-#
-
-##################
 
 ##############
 # TERM STUFF #
@@ -513,9 +369,10 @@ compdef _hosts upgrade
 # MISC. STUFF #
 ###############
 
-[ -r ~/.zshrc.local ] && source ~/.zshrc.local
+for confFiles in ~/.zshrc.local ~/.zshrc_functions /nix/etc/profile.d/nix.sh; do
+    [ -r "$confFiles" ] && source "$confFiles"
+done
 
-[ -r /nix/etc/profile.d/nix.sh ] && source /nix/etc/profile.d/nix.sh
 umask 0066
 
 
@@ -523,7 +380,7 @@ umask 0066
 # STUPIDITIES #
 ###############
 # Show the TODO file
-[ -e ~/TODO ] && ([ -e ~/todo.sh ] && ./todo.sh || < ~/TODO)
+[ -e ~/TODO ] && ([ -e ~/todo.sh ] && ~/todo.sh -l || < ~/TODO)
 
 # Set the prompt.
 #prompt="$PromptColor%~%(!|%{$fg[yellow]%}|%{$fg_bold[black]%})%(?..%{$fg[red]%})%#%{$fg_no_bold[default]%} "
@@ -534,27 +391,6 @@ umask 0066
 
 alias unrar='nice -n 19 unrar'
 
-#my-accept-line ()
-#{
-#    targets="emacs e firefox xpdf gthumb"
-#
-#    if test "${+SSH_CONNECTION}" -eq 0; then
-#        if ! echo "$BUFFER" | grep -Eq "&!?$"; then
-#            for t in $targets; do
-#                if echo $BUFFER | grep -q "^$t\b"; then
-#                    BUFFER="$BUFFER&!"
-#                    break
-#                fi
-#            done
-#        fi
-#    fi
-#    zle accept-line
-#}
-
-#zle -N my-accept-line
-
-#bindkey "" my-accept-line
-
 # no beep
 unsetopt beep
 unsetopt hist_beep
@@ -562,16 +398,9 @@ unsetopt list_beep
 
 setopt hist_verify
 
-
-
-. ~/.zshrc_functions
-
-xset b off
-
-
 ## Kaneton ##
-export KANETON_USER="faure_p"
-export KANETON_HOST="linux/ia32"
-export KANETON_PLATFORM="ibm-pc"
-export KANETON_ARCHITECTURE="ia32"
-export KANETON_PYTHON="/usr/bin/python"
+#export KANETON_USER="faure_p"
+#export KANETON_HOST="linux/ia32"
+#export KANETON_PLATFORM="ibm-pc"
+#export KANETON_ARCHITECTURE="ia32"
+#export KANETON_PYTHON="/usr/bin/python"
