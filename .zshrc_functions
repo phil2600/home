@@ -216,6 +216,15 @@ netstat -lapute --inet | grep ns | grep netsoul | sed "s/ESTABLISHED//" |tr -s "
 # ls more
 lm() { ls -la "$@" | more}
 
+# Mount a temporary ram partition
+mntOnRam() {
+    if [ $# -ne 2 ]; then
+	echo "Usage: mountPoint size"
+	return 1
+    fi
+    sudo mount -t tmpfs tmpfs "$1" -o size=$2m
+}
+
 
 ###########
 #  ALIAS  #

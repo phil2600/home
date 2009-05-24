@@ -6,8 +6,7 @@
         status = auto
         branch = auto
 [alias]
-# Clone from Gostai
- gostai = !"f() { echo \"Clone gostai.com:$1\"; git clone git@svn.gostai.com:$1; }; f"
+
  # Checkout -b
  cob =!"f() { echo \"Checkout branch origin/$1\"; git checkout -b $1 origin/$1; }; f"
  # Fetch/rebase
@@ -23,8 +22,6 @@
  # Branch -a
  bra = branch -a
 
- # Full checkout
- full = !"f() { echo \"Full init gostai.com:$1\"; git clone git@svn.gostai.com:$1 && cd $1; sleep 1; if test "$2" = "master"; then git checkout master else git cob $2; fi; git br $2 && git subi && git subu; }; f"
 
         st = status
         ci = commit -s
@@ -55,4 +52,7 @@
         rewrite=!"d=`git rev-parse --git-dir`; git diff-index --quiet HEAD || { echo dirty index 2>&1; exit 1; }; f() { echo $1 >$d/rewrite; git branch | sed '/^[*] /!d;s///' >>$d/rewrite; test x"$1" = x && rm -f $d/rewrite && echo 'usage: rewrite <sha1>' || :; git checkout $1; }; f"
         rwdone=!"d=`git rev-parse --git-dir`; test -f $d/rewrite && git rebase --onto HEAD `cat $d/rewrite`"
 
+
+[github]
+	user = phil2600
 
