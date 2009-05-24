@@ -1,15 +1,25 @@
+[URGENT]
+-	Add repo for candidatures
 [ EPITA ]
--	Droit Prop Intell
--	Marketing Indus
++	Droit Prop Intell
++	Marketing Indus
+>       Kaneton K3
 [ YAKA ]
 [ ROOT ]
-+	Obfuscation de la clef
 +	git
 +	Migration Intra svn => git
 +	Migration Scripts
->	  Tests
++	  Tests
 +	Mise en place sur les serveurs
->	  Tests
++	  Tests
 >	Dump BDD Intra
 >	Dump
--	Droits sur les depots
+-       Liste Matos
+-       Trac pour GIT
+-       list des trucs a faire
+-       RSYNC
+-	emacs 22 sur pascal
+-	LOGS
+[INTRA]
++	Droits sur les depots
+-        Tests

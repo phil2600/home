@@ -1,5 +1,5 @@
 [user]
-	name = Faure Philippe
+	name = Philippe FAURE
 	email = faure_p@yaka.epita.fr
 [color]
         diff = auto
@@ -21,7 +21,6 @@
  br = branch
  # Branch -a
  bra = branch -a
-
 
         st = status
         ci = commit -s
@@ -55,4 +54,3 @@
 
 [github]
 	user = phil2600
-
