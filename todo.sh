@@ -132,15 +132,15 @@ f_init()
     # find TODO file
     cd $PWD
     TODO="TODO"
-    while [ ! -r $TODO ] ; do
-	TODO="../$TODO"
-    done
+#    while [ ! -r $TODO ] ; do
+#	TODO="../$TODO"
+#    done
 }
 
 f_close()
 {
     echo $std
-    cd -
+#    cd -
 }
 
 

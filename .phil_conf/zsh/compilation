@@ -1,0 +1,133 @@
+# "-*- sh -*-"
+
+csrcexts=(
+    h c
+    hh hpp hxx ipp C cc cpp cxx
+)
+
+puresrcexts=(
+    $csrcexts
+    cs
+    di
+    el
+    exa
+    hs
+    java
+    js
+)
+
+srcexts=(
+    $puresrcexts
+    d
+    php
+    pl pm
+    py
+    rb
+    sh zsh
+)
+
+csrcexp='\( '
+for csrcext in $csrcexts; do
+    csrcexp+="\|$csrcext"
+done
+csrcexp+='\)'
+
+function colorizeGCC()
+{
+    local location yellow red
+
+    location="^\.\?[a-zA-Z_/@0-9\.-]\+\.$csrcexp:[0-9]\+\(:[0-9]\+\)\?:"
+    yellow="\\\\e[1;33m&\\\\e[0m"
+    red="\\\\e[1;31m&\\\\e[0m"
+    while read line; do
+	echo `echo $line | sed "
+            s%$location warning:%$yellow%
+            s%$location error:%$red%
+        "`
+    done
+}
+
+function cpl()
+{
+    gcc -Wall -Wextra -std=c89 -pedantic $@ |& colorizeGCC
+}
+function cpo()
+{
+    gcc -Wall -Wextra -std=c99 -pedantic $@ |& colorizeGCC
+}
+function gpp()
+{
+    g++ -Wall -Wextra -Wconversion -Wabi -std=c++98 -pedantic $@ |& colorizeGCC
+}
+
+function tcp()
+{
+    local name
+
+    name=`mktemp`
+    print '\e[1;33m*** Compiling ***\e[0m'
+    echo `which gpp` $@
+    gpp $@ -o $name
+
+    ret=$?
+
+    if ((ret)) || ! [[ -x $name ]]; then
+	return $ret
+    fi
+
+    print '\e[1;33m*** Running ' $name '***\e[0m'
+    time $name
+    return $?
+}
+
+function dgpp()
+{
+    gpp -pg -ggdb $@
+}
+
+function cf()
+{
+    ./configure $@
+}
+
+function m()
+{
+    make $@ | colorizeGCC
+}
+
+function cl()
+{
+    make clean $@
+}
+
+function mca()
+{
+    make clean all $@ | colorizeGCC
+}
+
+function cmca()
+{
+    ./configure && make clean all $@ | colorizeGCC
+}
+
+function arf()
+{
+    autoreconf -if $@
+}
+
+function acm()
+{
+    autoreconf -if >- && ./configure >- && echo && echo && echo '-----------------------------------' && echo && echo && make clean all >- $@
+}
+
+if which sdl-config >&-; then
+    function cplg()
+    {
+	cpl `sdl-config --libs`  -I/usr/pkg/include/ -I/usr/pkg/include/GL -lGL -lGLU -lglut -lSDL_ttf -lSDL_image `sdl-config --cflags` $@
+    }
+fi
+
+function dcm()
+{
+    objdump -SM intel $@
+}

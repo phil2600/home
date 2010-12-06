@@ -1,0 +1,61 @@
+# "-*- sh -*-"
+
+autoload zcalc
+
+function zc()
+{
+    zcalc $@
+}
+alias zc='noglob zc'
+
+function comp()
+{
+    local file
+
+    file=`tempfile`.d
+    cat > $file <<EOF
+		import std.stdio;
+		import std.math;
+
+		int main()
+		{
+		  double compute()
+		  {
+EOF
+
+    echo $* \; >> $file
+
+    cat >> $file <<EOF
+		  }
+
+		  std.stdio.writefln(compute());
+
+		  return 0;
+		}
+EOF
+
+    `which dmd2` -run $file
+}
+
+setopt c_bases
+setopt octal_zeroes
+
+function 0x()
+{
+    echo $(([#16]$1))
+}
+
+function 0()
+{
+    echo $(([#8]$1))
+}
+
+function b()
+{
+    echo $(([#2]$1))
+}
+
+function 10()
+{
+    echo $(($1))
+}
